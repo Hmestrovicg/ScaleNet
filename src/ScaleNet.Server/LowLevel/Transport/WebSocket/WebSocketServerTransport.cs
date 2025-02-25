@@ -87,7 +87,7 @@ public sealed class WebSocketServerTransport : IServerTransport
         
         NetMessagePacket packet = NetMessagePacket.CreateIncomingNoCopy(data, false);
         
-        bool serializeSuccess = NetMessages.TryDeserialize(packet, out DeserializedNetMessage msg);
+        bool serializeSuccess = INetMessage.TryDeserialize(packet, out DeserializedNetMessage msg);
                 
         if (!serializeSuccess)
         {
@@ -171,7 +171,7 @@ public sealed class WebSocketServerTransport : IServerTransport
         Debug.Assert(connectionId != ConnectionId.Invalid, "Invalid connectionId.");
         
         // Write to a packet.
-        if (!NetMessages.TrySerialize(message, out NetMessagePacket packet))
+        if (!INetMessage.TrySerialize(message, out NetMessagePacket packet))
             return;
 
         // _serverSocket internally handles the broadcast ID.

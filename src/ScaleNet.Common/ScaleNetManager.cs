@@ -16,7 +16,7 @@ namespace ScaleNet.Common
             if (logger != null)
                 Logger = logger;
             
-            NetMessages.Initialize();
+            INetMessage.Initialize();
             
             IsInitialized = true;
         }

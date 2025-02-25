@@ -45,7 +45,7 @@ namespace ScaleNet.Client.LowLevel.Transport.WebSocket
         {
             NetMessagePacket packet = NetMessagePacket.CreateIncomingNoCopy(data, false);
         
-            bool serializeSuccess = NetMessages.TryDeserialize(packet, out DeserializedNetMessage msg);
+            bool serializeSuccess = INetMessage.TryDeserialize(packet, out DeserializedNetMessage msg);
                 
             if (!serializeSuccess)
             {
@@ -106,7 +106,7 @@ namespace ScaleNet.Client.LowLevel.Transport.WebSocket
         public void SendAsync<T>(T message) where T : INetMessage
         {
             // Write to a packet.
-            if (!NetMessages.TrySerialize(message, out NetMessagePacket packet))
+            if (!INetMessage.TrySerialize(message, out NetMessagePacket packet))
                 return;
 
             _clientSocket.SendToServer(packet);

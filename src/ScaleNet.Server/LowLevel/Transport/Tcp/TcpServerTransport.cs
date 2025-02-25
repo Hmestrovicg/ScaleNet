@@ -92,7 +92,7 @@ public sealed class TcpServerTransport : SslServer, IServerTransport
         {
             while (session.IncomingPackets.TryDequeue(out NetMessagePacket packet))
             {
-                bool serializeSuccess = NetMessages.TryDeserialize(packet, out DeserializedNetMessage msg);
+                bool serializeSuccess = INetMessage.TryDeserialize(packet, out DeserializedNetMessage msg);
                 packet.Dispose();
                 
                 if (!serializeSuccess)
@@ -152,7 +152,7 @@ public sealed class TcpServerTransport : SslServer, IServerTransport
     private static void QueueSendAsync<T>(TcpClientSession session, T message) where T : INetMessage
     {
         // Write to a packet.
-        if (!NetMessages.TrySerialize(message, out NetMessagePacket packet))
+        if (!INetMessage.TrySerialize(message, out NetMessagePacket packet))
             return;
         
         session.OutgoingPackets.Enqueue(packet);

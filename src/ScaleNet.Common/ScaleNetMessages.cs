@@ -149,8 +149,20 @@ namespace ScaleNet.Common
             Id = id;
         }
     }
-    
-    public static class NetMessages
+
+
+    /// <summary>
+    /// Inherit to define a network message that can be sent over the network.
+    /// </summary>
+    /// 
+    /// <remarks>
+    /// Implementations must be thread safe.<br/>
+    /// Implementations must be immutable.<br/>
+    /// Implementations must be decorated with the <see cref="MessagePackObjectAttribute"/> attribute.<br/>
+    /// Implementation members must be decorated with the <see cref="KeyAttribute"/> attribute.<br/>
+    /// Any constructors may be skipped when deserializing.
+    /// </remarks>
+    public interface INetMessage
     {
         private static readonly Dictionary<ushort, Type> MessageTypes = new();
         private static readonly Dictionary<Type, ushort> MessageIds = new();
@@ -162,8 +174,8 @@ namespace ScaleNet.Common
         {
             RegisterAllMessages();
         }
-        
-        
+
+
         private static void RegisterAllMessages()
         {
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -235,8 +247,8 @@ namespace ScaleNet.Common
         {
             return MessageTypes.TryGetValue(id, out type);
         }
-        
-        
+
+
         public static bool TryGetMessageId(Type type, out ushort id)
         {
             return MessageIds.TryGetValue(type, out id);
@@ -306,23 +318,6 @@ namespace ScaleNet.Common
         }
 
 #endregion
-    }
-
-
-    /// <summary>
-    /// Inherit to define a network message that can be sent over the network.
-    /// </summary>
-    /// 
-    /// <remarks>
-    /// Implementations must be thread safe.<br/>
-    /// Implementations must be immutable.<br/>
-    /// Implementations must be decorated with the <see cref="MessagePackObjectAttribute"/> attribute.<br/>
-    /// Implementation members must be decorated with the <see cref="KeyAttribute"/> attribute.<br/>
-    /// Any constructors may be skipped when deserializing.
-    /// </remarks>
-    public interface INetMessage
-    {
-        
     }
 
 
