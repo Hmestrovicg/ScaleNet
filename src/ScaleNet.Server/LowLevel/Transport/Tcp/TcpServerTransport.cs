@@ -196,7 +196,7 @@ public sealed class TcpServerTransport : SslServer, IServerTransport
 
     internal void DisconnectSession(TcpClientSession session, InternalDisconnectReason reason)
     {
-        QueueSendAsync(session, new InternalDisconnectMessage(reason));
+        QueueSendAsync(session, new ScaleNetDisconnectMessage(reason));
         SendOutgoingPackets(session);
         
         DisconnectSessionImmediate(session);

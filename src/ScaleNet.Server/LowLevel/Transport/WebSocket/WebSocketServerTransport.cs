@@ -185,7 +185,7 @@ public sealed class WebSocketServerTransport : IServerTransport
 
     public bool StopConnection(ConnectionId connectionId, InternalDisconnectReason reason)
     {
-        QueueSendAsync(connectionId, new InternalDisconnectMessage(reason));
+        QueueSendAsync(connectionId, new ScaleNetDisconnectMessage(reason));
         
         return StopRemoteConnection(connectionId, true);
     }

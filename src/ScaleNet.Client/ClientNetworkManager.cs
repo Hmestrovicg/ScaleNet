@@ -44,9 +44,9 @@ namespace ScaleNet.Client
             
             _pingInterval = pingInterval;
         
-            RegisterMessageHandler<InternalDisconnectMessage>(OnDisconnectReceived);
-            RegisterMessageHandler<InternalPingMessage>(_ => SendMessageToServer(new InternalPongMessage()));
-            RegisterMessageHandler<InternalPongMessage>(OnPongReceived);
+            RegisterMessageHandler<ScaleNetDisconnectMessage>(OnDisconnectReceived);
+            RegisterMessageHandler<ScaleNetPingMessage>(_ => SendMessageToServer(new ScaleNetPongMessage()));
+            RegisterMessageHandler<ScaleNetPongMessage>(OnPongReceived);
         }
 
 
@@ -145,7 +145,7 @@ namespace ScaleNet.Client
         }
 
 
-        private void OnDisconnectReceived(InternalDisconnectMessage message)
+        private void OnDisconnectReceived(ScaleNetDisconnectMessage message)
         {
             ScaleNetManager.Logger.LogWarning($"Received disconnect message from server: {message.Reason}");
         
@@ -163,13 +163,13 @@ namespace ScaleNet.Client
             if (currentTime - _lastSentPingTimestamp < _pingInterval)
                 return;
 
-            SendMessageToServer(new InternalPingMessage());
+            SendMessageToServer(new ScaleNetPingMessage());
             _lastSentPingTimestamp = currentTime;
             _isWaitingForPong = true;
         }
 
 
-        private void OnPongReceived(InternalPongMessage msg)
+        private void OnPongReceived(ScaleNetPongMessage msg)
         {
             if (!_isWaitingForPong)
             {

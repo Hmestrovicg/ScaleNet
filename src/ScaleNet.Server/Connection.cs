@@ -51,7 +51,7 @@ public abstract class Connection
         Debug.Assert(!IsWaitingForPong, "Cannot send a ping while waiting for a pong.");
         
         _lastSentPingTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        QueueSend(new InternalPingMessage());
+        QueueSend(new ScaleNetPingMessage());
         IsWaitingForPong = true;
     }
     
@@ -76,7 +76,7 @@ public abstract class Connection
     
     internal void OnPingReceived()
     {
-        QueueSend(new InternalPongMessage());
+        QueueSend(new ScaleNetPongMessage());
     }
 
 #endregion

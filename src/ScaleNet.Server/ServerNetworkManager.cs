@@ -54,8 +54,8 @@ public sealed class ServerNetworkManager<TConnection> : IDisposable where TConne
         _transport.RemoteConnectionStateChanged += OnRemoteConnectionStateChanged;
         _transport.MessageReceived += OnMessageReceived;
         
-        RegisterMessageHandler<InternalPingMessage>(OnPingMessageReceived);
-        RegisterMessageHandler<InternalPongMessage>(OnPongMessageReceived);
+        RegisterMessageHandler<ScaleNetPingMessage>(OnPingMessageReceived);
+        RegisterMessageHandler<ScaleNetPongMessage>(OnPongMessageReceived);
     }
 
 
@@ -266,7 +266,7 @@ public sealed class ServerNetworkManager<TConnection> : IDisposable where TConne
     /// <summary>
     /// Called when a ping message is received from a client.
     /// </summary>
-    private static void OnPingMessageReceived(TConnection connection, InternalPingMessage msg)
+    private static void OnPingMessageReceived(TConnection connection, ScaleNetPingMessage msg)
     {
         connection.OnPingReceived();
     }
@@ -275,7 +275,7 @@ public sealed class ServerNetworkManager<TConnection> : IDisposable where TConne
     /// <summary>
     /// Called when a pong message is received from a client.
     /// </summary>
-    private static void OnPongMessageReceived(TConnection connection, InternalPongMessage msg)
+    private static void OnPongMessageReceived(TConnection connection, ScaleNetPongMessage msg)
     {
         connection.OnPongReceived();
     }

@@ -307,8 +307,8 @@ namespace ScaleNet.Common
 
 #endregion
     }
-    
-    
+
+
     /// <summary>
     /// Inherit to define a network message that can be sent over the network.
     /// </summary>
@@ -320,20 +320,23 @@ namespace ScaleNet.Common
     /// Implementation members must be decorated with the <see cref="KeyAttribute"/> attribute.<br/>
     /// Any constructors may be skipped when deserializing.
     /// </remarks>
-    public interface INetMessage { }
+    public interface INetMessage
+    {
+        
+    }
 
 
 #region Internal message implementations
 
     [NetMessage(65000)]
     [MessagePackObject]
-    public readonly struct InternalDisconnectMessage : INetMessage
+    public readonly struct ScaleNetDisconnectMessage : INetMessage
     {
         [Key(0)]
         public readonly InternalDisconnectReason Reason;
 
 
-        public InternalDisconnectMessage(InternalDisconnectReason reason)
+        public ScaleNetDisconnectMessage(InternalDisconnectReason reason)
         {
             Reason = reason;
         }
@@ -341,14 +344,14 @@ namespace ScaleNet.Common
 
     [NetMessage(65001)]
     [MessagePackObject]
-    public readonly struct InternalPingMessage : INetMessage
+    public readonly struct ScaleNetPingMessage : INetMessage
     {
         // Empty message to conserve bandwidth.
     }
 
     [NetMessage(65002)]
     [MessagePackObject]
-    public readonly struct InternalPongMessage : INetMessage
+    public readonly struct ScaleNetPongMessage : INetMessage
     {
         // Empty message to conserve bandwidth.
     }
