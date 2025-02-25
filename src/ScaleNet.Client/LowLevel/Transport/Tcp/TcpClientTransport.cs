@@ -56,7 +56,7 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
         public void SendAsync<T>(T message) where T : INetMessage
         {
             // Write to a packet.
-            if (!INetMessage.TrySerialize(message, out NetMessagePacket packet))
+            if (!INetMessage.TrySerialize(message, out SerializedNetMessage packet))
                 return;
         
             if (packet.Length > SharedConstants.MAX_MESSAGE_SIZE_BYTES)
@@ -188,7 +188,7 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
 
         private void OnReceiveFullPacket(byte[] data, int length)
         {
-            NetMessagePacket packet = NetMessagePacket.CreateIncomingNoCopy(data, 0, length, false);
+            SerializedNetMessage packet = SerializedNetMessage.CreateIncomingNoCopy(data, 0, length, false);
         
             bool serializeSuccess = INetMessage.TryDeserialize(packet, out DeserializedNetMessage msg);
                 

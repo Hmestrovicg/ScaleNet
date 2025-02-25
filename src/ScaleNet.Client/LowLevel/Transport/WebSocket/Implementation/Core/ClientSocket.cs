@@ -14,7 +14,7 @@ namespace ScaleNet.Client.LowLevel.Transport.WebSocket.Core
         private SimpleWebClient? _client;
 
         private readonly ClientSslContext? _sslContext;
-        private readonly Queue<NetMessagePacket> _outgoing;
+        private readonly Queue<SerializedNetMessage> _outgoing;
 
 
         public ConnectionState State { get; private set; } = ConnectionState.Disconnected;
@@ -27,7 +27,7 @@ namespace ScaleNet.Client.LowLevel.Transport.WebSocket.Core
         {
             _sslContext = sslContext;
             
-            _outgoing = new Queue<NetMessagePacket>();
+            _outgoing = new Queue<SerializedNetMessage>();
         }
 
 
@@ -73,7 +73,7 @@ namespace ScaleNet.Client.LowLevel.Transport.WebSocket.Core
         /// <summary>
         /// Sends a packet to the server.
         /// </summary>
-        public void SendToServer(NetMessagePacket packet)
+        public void SendToServer(SerializedNetMessage packet)
         {
             if (State != ConnectionState.Connected)
                 return;
@@ -180,7 +180,7 @@ namespace ScaleNet.Client.LowLevel.Transport.WebSocket.Core
             int count = _outgoing.Count;
             for (int i = 0; i < count; i++)
             {
-                NetMessagePacket outgoing = _outgoing.Dequeue();
+                SerializedNetMessage outgoing = _outgoing.Dequeue();
                 _client.Send(outgoing.Buffer, outgoing.Offset, outgoing.Length);
                 outgoing.Dispose();
             }
@@ -209,7 +209,7 @@ namespace ScaleNet.Client.LowLevel.Transport.WebSocket.Core
             int count = _outgoing.Count;
             for (int i = 0; i < count; i++)
             {
-                NetMessagePacket p = _outgoing.Dequeue();
+                SerializedNetMessage p = _outgoing.Dequeue();
                 p.Dispose();
             }
         }

@@ -90,7 +90,7 @@ public sealed class TcpServerTransport : SslServer, IServerTransport
         //NOTE: Sessions that are iterated first have packet priority.
         foreach (TcpClientSession session in _sessions.Values)
         {
-            while (session.IncomingPackets.TryDequeue(out NetMessagePacket packet))
+            while (session.IncomingPackets.TryDequeue(out SerializedNetMessage packet))
             {
                 bool serializeSuccess = INetMessage.TryDeserialize(packet, out DeserializedNetMessage msg);
                 packet.Dispose();
@@ -152,7 +152,7 @@ public sealed class TcpServerTransport : SslServer, IServerTransport
     private static void QueueSendAsync<T>(TcpClientSession session, T message) where T : INetMessage
     {
         // Write to a packet.
-        if (!INetMessage.TrySerialize(message, out NetMessagePacket packet))
+        if (!INetMessage.TrySerialize(message, out SerializedNetMessage packet))
             return;
         
         session.OutgoingPackets.Enqueue(packet);
@@ -211,7 +211,7 @@ public sealed class TcpServerTransport : SslServer, IServerTransport
 
     private void SendOutgoingPackets(TcpClientSession session)
     {
-        while (session.OutgoingPackets.TryDequeue(out NetMessagePacket packet))
+        while (session.OutgoingPackets.TryDequeue(out SerializedNetMessage packet))
         {
             // Get a pooled buffer to add the length prefix.
             int payloadLength = packet.Length;

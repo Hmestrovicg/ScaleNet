@@ -30,7 +30,7 @@ namespace ScaleNet.Common
     /// Contains the message ID and the message data.<br/>
     /// Must be explicitly disposed to return the internal memory buffer to the pool.
     /// </summary>
-    public readonly struct NetMessagePacket : IDisposable
+    public readonly struct SerializedNetMessage : IDisposable
     {
         public readonly byte[] Buffer;
         public readonly int Offset;
@@ -38,7 +38,7 @@ namespace ScaleNet.Common
         public readonly bool RequireDispose;
 
 
-        private NetMessagePacket(byte[] data, int offset, int length, bool requireDispose)
+        private SerializedNetMessage(byte[] data, int offset, int length, bool requireDispose)
         {
             Buffer = data;
             Offset = offset;
@@ -52,7 +52,7 @@ namespace ScaleNet.Common
         /// All data is copied internally, and the returned packet MUST be disposed.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NetMessagePacket CreateOutgoing(ushort id, byte[] data)
+        public static SerializedNetMessage CreateOutgoing(ushort id, byte[] data)
         {
             // Get a pooled buffer to add the message id.
             int payloadLength = data.Length;
@@ -65,7 +65,7 @@ namespace ScaleNet.Common
             // Copy the message data to the buffer.
             data.CopyTo(buffer.AsSpan(2));
             
-            return new NetMessagePacket(buffer, 0, packetLength, true);
+            return new SerializedNetMessage(buffer, 0, packetLength, true);
         }
         
         
@@ -74,12 +74,12 @@ namespace ScaleNet.Common
         /// All data is copied internally, and the returned packet MUST be disposed.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NetMessagePacket CreateIncoming(byte[] data, int offset, int length)
+        public static SerializedNetMessage CreateIncoming(byte[] data, int offset, int length)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(length);
             System.Buffer.BlockCopy(data, offset, buffer, 0, length);
             
-            return new NetMessagePacket(buffer, 0, length, true);
+            return new SerializedNetMessage(buffer, 0, length, true);
         }
         
         
@@ -88,9 +88,9 @@ namespace ScaleNet.Common
         /// The data is NOT copied internally.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NetMessagePacket CreateIncomingNoCopy(byte[] data, int offset, int length, bool requireDispose)
+        public static SerializedNetMessage CreateIncomingNoCopy(byte[] data, int offset, int length, bool requireDispose)
         {
-            return new NetMessagePacket(data, offset, length, requireDispose);
+            return new SerializedNetMessage(data, offset, length, requireDispose);
         }
         
         
@@ -99,9 +99,9 @@ namespace ScaleNet.Common
         /// The data is NOT copied internally.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NetMessagePacket CreateIncomingNoCopy(ArraySegment<byte> data, bool requireDispose)
+        public static SerializedNetMessage CreateIncomingNoCopy(ArraySegment<byte> data, bool requireDispose)
         {
-            return new NetMessagePacket(data.Array!, data.Offset, data.Count, requireDispose);
+            return new SerializedNetMessage(data.Array!, data.Offset, data.Count, requireDispose);
         }
         
         
@@ -263,7 +263,7 @@ namespace ScaleNet.Common
         /// </summary>
         /// <param name="msg">The message to serialize.</param>
         /// <param name="packet">The resulting packet, if successful. Must be disposed of after use.</param>
-        public static bool TrySerialize<T>(T msg, out NetMessagePacket packet)
+        public static bool TrySerialize<T>(T msg, out SerializedNetMessage packet)
         {
             Debug.Assert(msg != null, nameof(msg) + " != null");
             
@@ -278,7 +278,7 @@ namespace ScaleNet.Common
             // May require changing the internal packet format of transports to cache the packet contents internally.
             byte[] payload = MessagePackSerializer.Serialize(msg);
             
-            packet = NetMessagePacket.CreateOutgoing(id, payload);
+            packet = SerializedNetMessage.CreateOutgoing(id, payload);
             return true;
         }
 
@@ -286,7 +286,7 @@ namespace ScaleNet.Common
         /// <summary>
         /// Deserializes a network message from a byte array.
         /// </summary>
-        public static bool TryDeserialize(in NetMessagePacket packet, out DeserializedNetMessage message)
+        public static bool TryDeserialize(in SerializedNetMessage packet, out DeserializedNetMessage message)
         {
             ushort id = packet.ReadId();
             ReadOnlyMemory<byte> payload = packet.ReadPayload();

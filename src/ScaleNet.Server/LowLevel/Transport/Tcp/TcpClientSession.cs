@@ -13,8 +13,8 @@ internal class TcpClientSession(ConnectionId id, TcpServerTransport transport, A
     private readonly MemoryStream _receiveBuffer = new();
 
     // Packets need to be stored per-session to, for example, allow sending all queued packets before disconnecting.
-    public readonly ConcurrentQueue<NetMessagePacket> OutgoingPackets = new();
-    public readonly ConcurrentQueue<NetMessagePacket> IncomingPackets = new();
+    public readonly ConcurrentQueue<SerializedNetMessage> OutgoingPackets = new();
+    public readonly ConcurrentQueue<SerializedNetMessage> IncomingPackets = new();
     public readonly ConnectionId ConnectionId = id;
     
     public ConnectionState ConnectionState { get; private set; }
@@ -29,10 +29,10 @@ internal class TcpClientSession(ConnectionId id, TcpServerTransport transport, A
         
         _receiveBuffer.Dispose();
             
-        while (OutgoingPackets.TryDequeue(out NetMessagePacket packet))
+        while (OutgoingPackets.TryDequeue(out SerializedNetMessage packet))
             packet.Dispose();
             
-        while (IncomingPackets.TryDequeue(out NetMessagePacket packet))
+        while (IncomingPackets.TryDequeue(out SerializedNetMessage packet))
             packet.Dispose();
             
         ConnectionState = ConnectionState.Disconnected;
@@ -131,7 +131,7 @@ internal class TcpClientSession(ConnectionId id, TcpServerTransport transport, A
             return;
         }
         
-        NetMessagePacket packet = NetMessagePacket.CreateIncoming(data, 0, length);
+        SerializedNetMessage packet = SerializedNetMessage.CreateIncoming(data, 0, length);
         
         IncomingPackets.Enqueue(packet);
     }

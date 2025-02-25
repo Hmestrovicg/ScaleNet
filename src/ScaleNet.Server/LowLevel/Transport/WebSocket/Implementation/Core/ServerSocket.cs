@@ -14,10 +14,10 @@ internal sealed class ServerSocket : IDisposable
     private readonly struct ConnectionPacket : IDisposable
     {
         public readonly ConnectionId ConnectionId;
-        public readonly NetMessagePacket Payload;
+        public readonly SerializedNetMessage Payload;
 
         
-        public ConnectionPacket(ConnectionId connectionId, NetMessagePacket payload)
+        public ConnectionPacket(ConnectionId connectionId, SerializedNetMessage payload)
         {
             ConnectionId = connectionId;
             Payload = payload;
@@ -299,7 +299,7 @@ internal sealed class ServerSocket : IDisposable
     /// Sends a packet to a single or all clients.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void QueueSend(ConnectionId connectionId, NetMessagePacket payload)
+    public void QueueSend(ConnectionId connectionId, SerializedNetMessage payload)
     {
         if (State != ServerState.Started)
             return;
