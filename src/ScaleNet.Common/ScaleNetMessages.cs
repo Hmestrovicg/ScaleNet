@@ -12,6 +12,10 @@ using ScaleNet.Common.Utils;
 
 namespace ScaleNet.Common
 {
+    /// <summary>
+    /// A network message in deserialized format.
+    /// Contains the message and the absolute Type of the message.
+    /// </summary>
     public readonly struct DeserializedNetMessage
     {
         public readonly INetMessage Message;
@@ -26,7 +30,7 @@ namespace ScaleNet.Common
     }
 
     /// <summary>
-    /// A network message in packet format.
+    /// A network message in serialized (packet) format.
     /// Contains the message ID and the message data.<br/>
     /// Must be explicitly disposed to return the internal memory buffer to the pool.
     /// </summary>
