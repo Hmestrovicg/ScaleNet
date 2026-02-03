@@ -16,6 +16,10 @@
       <Folder Include="LowLevel\Transport\WebSocket\Implementation\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MessagePack" Version="3.1.4" />
+    </ItemGroup>
+
     <!-- Debug configuration -->
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <DefineConstants>TRACE</DefineConstants>
