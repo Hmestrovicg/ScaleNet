@@ -7,7 +7,7 @@ using ScaleNet.Common.LowLevel;
 
 namespace ScaleNet.Server.LowLevel.Transport.Tcp;
 
-internal class TcpClientSession(ConnectionId id, TcpServerTransport transport, Action<ConnectionStateChangeArgs>? sessionStateChanged) : SslSession(transport)
+public class TcpClientSession(ConnectionId id, TcpServerTransport transport, Action<ConnectionStateChangeArgs>? sessionStateChanged) : SslSession(transport)
 {
     // Buffer for accumulating incomplete packet data
     private readonly MemoryStream _receiveBuffer = new();

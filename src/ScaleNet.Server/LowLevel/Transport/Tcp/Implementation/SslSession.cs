@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.IO;
+using System.Diagnostics;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
@@ -13,7 +15,7 @@ namespace ScaleNet.Server.LowLevel.Transport.Tcp;
 public class SslSession : IDisposable
 {
     private bool _isDisconnecting;
-    private SslStream? _sslStream;
+    private Stream? _stream;
     private Guid? _sslStreamId;
 
     // Receive buffer
@@ -167,21 +169,45 @@ public class SslSession : IDisposable
 
         try
         {
-            // Create SSL stream
+            // Create the stream
             _sslStreamId = Guid.NewGuid();
-            _sslStream = Server.Context.CertificateValidationCallback != null
-                ? new SslStream(new NetworkStream(Socket, false), false, Server.Context.CertificateValidationCallback)
-                : new SslStream(new NetworkStream(Socket, false), false);
+            var networkStream = new NetworkStream(Socket, false);
+            
+            if (Server.Context == null)
+            {
+                // Plain TCP
+                _stream = networkStream;
+                IsHandshaked = true;
+            }
 
-            // Call the session handshaking handler
-            OnHandshaking();
+            if (Server.Context != null)
+            {
+                // Create SSL stream
+                _stream = Server.Context.CertificateValidationCallback != null
+                    ? new SslStream(networkStream, false, Server.Context.CertificateValidationCallback)
+                    : new SslStream(networkStream, false);
 
-            // Call the session handshaking handler in the server
-            Server.OnHandshakingInternal(this);
+                // Call the session handshaking handler
+                OnHandshaking();
 
-            // Begin the SSL handshake
-            _sslStream.BeginAuthenticateAsServer(
-                Server.Context.Certificate, Server.Context.ClientCertificateRequired, ServerSslContext.Protocols, false, ProcessHandshake, _sslStreamId);
+                // Call the session handshaking handler in the server
+                Server.OnHandshakingInternal(this);
+
+                // Begin the SSL handshake
+                ((SslStream)_stream).BeginAuthenticateAsServer(
+                    Server.Context.Certificate, Server.Context.ClientCertificateRequired, ServerSslContext.Protocols, false, ProcessHandshake, _sslStreamId);
+            }
+            else
+            {
+                // Call the session handshaked handler
+                OnHandshaked();
+
+                // Call the session handshaked handler in the server
+                Server.OnHandshakedInternal(this);
+                
+                // Begin receiving immediately
+                TryReceive();
+            }
         }
         catch (Exception)
         {
@@ -212,23 +238,24 @@ public class SslSession : IDisposable
         // Call the session disconnecting handler in the server
         Server.OnDisconnectingInternal(this);
         
-        Debug.Assert(_sslStream != null, nameof(_sslStream) + " != null");
+        Debug.Assert(_stream != null, nameof(_stream) + " != null");
         Debug.Assert(Socket != null, nameof(Socket) + " != null");
 
         try
         {
             try
             {
-                // Shutdown the SSL stream
-                _sslStream.ShutdownAsync().Wait();
+                // Shutdown the stream
+                if (_stream is SslStream sslStream)
+                    sslStream.ShutdownAsync().Wait();
             }
             catch (Exception)
             {
                 // ignored
             }
 
-            // Dispose the SSL stream & buffer
-            _sslStream.Dispose();
+            // Dispose the stream & buffer
+            _stream?.Dispose();
             _sslStreamId = null;
 
             try
@@ -317,12 +344,10 @@ public class SslSession : IDisposable
         if (buffer.IsEmpty)
             return 0;
         
-        Debug.Assert(_sslStream != null, nameof(_sslStream) + " != null");
-
         try
         {
             // Sent data to the server
-            _sslStream.Write(buffer);
+            _stream!.Write(buffer);
 
             int sent = buffer.Length;
 
@@ -428,12 +453,10 @@ public class SslSession : IDisposable
         if (size == 0)
             return 0;
         
-        Debug.Assert(_sslStream != null, nameof(_sslStream) + " != null");
-
         try
         {
             // Receive data from the client
-            int received = _sslStream.Read(buffer, offset, size);
+            int received = _stream!.Read(buffer, offset, size);
             if (received <= 0)
                 return received;
 
@@ -499,7 +522,7 @@ public class SslSession : IDisposable
                     return;
 
                 _isReceiving = true;
-                result = _sslStream!.BeginRead(_receiveBuffer!.Data, 0, (int)_receiveBuffer.Capacity, ProcessReceive, _sslStreamId);
+                result = _stream!.BeginRead(_receiveBuffer!.Data, 0, (int)_receiveBuffer.Capacity, ProcessReceive, _sslStreamId);
             }
             while (result.CompletedSynchronously);
         }
@@ -556,7 +579,7 @@ public class SslSession : IDisposable
         try
         {
             // Async write with the write handler
-            _sslStream!.BeginWrite(_sendBufferFlush.Data, (int)_sendBufferFlushOffset, (int)(_sendBufferFlush.Size - _sendBufferFlushOffset), ProcessSend, _sslStreamId);
+            _stream!.BeginWrite(_sendBufferFlush.Data, (int)_sendBufferFlushOffset, (int)(_sendBufferFlush.Size - _sendBufferFlushOffset), ProcessSend, _sslStreamId);
         }
         catch (ObjectDisposedException)
         {
@@ -603,7 +626,7 @@ public class SslSession : IDisposable
                 return;
 
             // End the SSL handshake
-            _sslStream!.EndAuthenticateAsServer(result);
+            ((SslStream)_stream!).EndAuthenticateAsServer(result);
 
             // Update the handshaked flag
             IsHandshaked = true;
@@ -648,8 +671,8 @@ public class SslSession : IDisposable
             if (_sslStreamId != sslStreamId)
                 return;
 
-            // End the SSL read
-            int size = _sslStream!.EndRead(result);
+            // End the read
+            int size = _stream!.EndRead(result);
 
             // Received some data from the client
             if (size > 0)
@@ -711,7 +734,7 @@ public class SslSession : IDisposable
                 return;
 
             // End the SSL write
-            _sslStream!.EndWrite(result);
+            _stream!.EndWrite(result);
 
             long size = _sendBufferFlush!.Size;
 
