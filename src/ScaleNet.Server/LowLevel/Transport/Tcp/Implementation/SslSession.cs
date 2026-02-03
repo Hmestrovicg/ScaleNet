@@ -158,14 +158,7 @@ public class SslSession : IDisposable
         // Call the session connecting handler in the server
         Server.OnConnectingInternal(this);
 
-        // Update the connected flag
-        IsConnected = true;
 
-        // Call the session connected handler
-        OnConnected();
-
-        // Call the session connected handler in the server
-        Server.OnConnectedInternal(this);
 
         try
         {
@@ -179,6 +172,15 @@ public class SslSession : IDisposable
                 _stream = networkStream;
                 IsHandshaked = true;
             }
+
+            // Update the connected flag
+            IsConnected = true;
+
+            // Call the session connected handler
+            OnConnected();
+
+            // Call the session connected handler in the server
+            Server.OnConnectedInternal(this);
 
             if (Server.Context != null)
             {

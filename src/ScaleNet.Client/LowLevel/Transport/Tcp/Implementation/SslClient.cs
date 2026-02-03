@@ -908,18 +908,25 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
                 BytesSent = 0;
                 BytesReceived = 0;
 
-                // Update the connected flag
-                IsConnected = true;
-
-                // Call the client connected handler
-                OnConnected();
-
                 try
                 {
                     // Create stream
                     _sslStreamId = Guid.NewGuid();
                     var networkStream = new NetworkStream(Socket!, false);
                     
+                    if (Context == null)
+                    {
+                        // Plain TCP
+                        _stream = networkStream;
+                        IsHandshaked = true;
+                    }
+
+                    // Update the connected flag
+                    IsConnected = true;
+
+                    // Call the client connected handler
+                    OnConnected();
+
                     if (Context != null)
                     {
                         _stream = Context.CertificateValidationCallback != null
@@ -938,10 +945,6 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
                     }
                     else
                     {
-                        // Plain TCP
-                        _stream = networkStream;
-                        IsHandshaked = true;
-                        
                         // Call the session handshaked handler
                         OnHandshaked();
 
