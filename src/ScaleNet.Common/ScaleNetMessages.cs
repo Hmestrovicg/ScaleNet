@@ -249,7 +249,9 @@ namespace ScaleNet.Common
 
         public static bool TryGetMessageType(ushort id, out Type type)
         {
+#pragma warning disable CS8601 // Possible null reference assignment.
             return MessageTypes.TryGetValue(id, out type);
+#pragma warning restore CS8601
         }
 
 

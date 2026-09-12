@@ -18,11 +18,7 @@ namespace ScaleNet.Client.LowLevel.Transport.WebSocket.SimpleWebTransport.Client
             {
                 Stream stream = conn.Stream!;
 
-                byte[] keyBuffer = new byte[16];
-                using (RNGCryptoServiceProvider rng = new())
-                {
-                    rng.GetBytes(keyBuffer);
-                }
+                byte[] keyBuffer = RandomNumberGenerator.GetBytes(16);
 
                 string key = Convert.ToBase64String(keyBuffer);
                 string keySum = key + Constants.HANDSHAKE_GUID;
