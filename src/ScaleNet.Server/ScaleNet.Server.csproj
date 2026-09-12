@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <LangVersion>12</LangVersion>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>ScaleNet.Server</AssemblyName>
@@ -18,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MessagePack" Version="3.1.4" />
+      <PackageReference Include="MessagePack" Version="3.1.8" />
     </ItemGroup>
 
     <!-- Debug configuration -->
