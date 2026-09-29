@@ -68,9 +68,9 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
         public ushort Port { get; }
 
         /// <summary>
-        /// SSL context
+        /// SSL context, or null for plain TCP without encryption (fork addition, local development only)
         /// </summary>
-        public ClientSslContext Context { get; }
+        public ClientSslContext? Context { get; }
 
         /// <summary>
         /// Endpoint
@@ -154,7 +154,7 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
         /// <param name="context">SSL context</param>
         /// <param name="address">IP address</param>
         /// <param name="port">Port number</param>
-        public SslClient(ClientSslContext context, IPAddress address, int port) : this(context, new IPEndPoint(address, port))
+        public SslClient(ClientSslContext? context, IPAddress address, int port) : this(context, new IPEndPoint(address, port))
         {
         }
 
@@ -165,7 +165,7 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
         /// <param name="context">SSL context</param>
         /// <param name="address">IP address</param>
         /// <param name="port">Port number</param>
-        public SslClient(ClientSslContext context, string address, int port) : this(context, new IPEndPoint(IPAddress.Parse(address), port))
+        public SslClient(ClientSslContext? context, string address, int port) : this(context, new IPEndPoint(IPAddress.Parse(address), port))
         {
         }
 
@@ -175,7 +175,7 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
         /// </summary>
         /// <param name="context">SSL context</param>
         /// <param name="endpoint">IP endpoint</param>
-        public SslClient(ClientSslContext context, IPEndPoint endpoint) : this(context, endpoint, endpoint.Address.ToString(), (ushort)endpoint.Port)
+        public SslClient(ClientSslContext? context, IPEndPoint endpoint) : this(context, endpoint, endpoint.Address.ToString(), (ushort)endpoint.Port)
         {
         }
 
@@ -187,7 +187,7 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
         /// <param name="endpoint">Endpoint</param>
         /// <param name="address">Server address</param>
         /// <param name="port">Server port</param>
-        private SslClient(ClientSslContext context, EndPoint endpoint, string address, ushort port)
+        private SslClient(ClientSslContext? context, EndPoint endpoint, string address, ushort port)
         {
             Id = Guid.NewGuid();
             Address = address;
@@ -362,7 +362,11 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
             if (!IsConnected && !IsConnecting)
                 return false;
 
-            if (IsConnecting)
+            Debug.Assert(Socket != null, nameof(Socket) + " != null");
+
+            // Cancel connecting operation. The synchronous Connect() path never creates
+            // _connectEventArg, and CancelConnectAsync throws on null.
+            if (IsConnecting && _connectEventArg != null)
                 Socket.CancelConnectAsync(_connectEventArg);
 
             if (_disconnecting)
@@ -826,10 +830,7 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
             try
             {
                 // Async write with the write handler
-                if (_stream is SslStream sslStream)
-                    sslStream.BeginWrite(_sendBufferFlush.Data, (int)_sendBufferFlushOffset, (int)(_sendBufferFlush.Size - _sendBufferFlushOffset), ProcessSend, _sslStreamId);
-                else
-                    _stream!.BeginWrite(_sendBufferFlush.Data, (int)_sendBufferFlushOffset, (int)(_sendBufferFlush.Size - _sendBufferFlushOffset), ProcessSend, _sslStreamId);
+                _stream!.BeginWrite(_sendBufferFlush.Data, (int)_sendBufferFlushOffset, (int)(_sendBufferFlush.Size - _sendBufferFlushOffset), ProcessSend, _sslStreamId);
             }
             catch (ObjectDisposedException)
             {

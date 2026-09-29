@@ -25,7 +25,7 @@ public sealed class TcpServerTransport : SslServer, IServerTransport
     public event Action<ConnectionId, DeserializedNetMessage>? MessageReceived;
 
 
-    public TcpServerTransport(ServerSslContext sslContext, IPAddress address, int port, int maxConnections) : base(sslContext, address, port)
+    public TcpServerTransport(ServerSslContext? sslContext, IPAddress address, int port, int maxConnections) : base(sslContext, address, port)
     {
         MaxConnections = maxConnections;
 
