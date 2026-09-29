@@ -1,6 +1,22 @@
 
 # ScaleNet - Scalable C# Networking for MMO Games
 
+> [!IMPORTANT]
+> **This is a fork of [japsuu/ScaleNet](https://github.com/japsuu/ScaleNet)** used by the
+> [G.B-U.V.I](https://github.com/Hmestrovicg/G.B-U.V.I) game, where it is included as a git submodule at `Libraries/ScaleNet`.
+> The rest of this README is upstream's and describes the original library.
+>
+> Differences from upstream:
+>
+> - **Plain-TCP mode.** Passing `null` as the SSL context to `TcpServerTransport` / `TcpClientTransport` skips TLS and
+>   uses the raw `NetworkStream`. This sends everything, including passwords and session tokens, unencrypted, so use it
+>   for local development only. Pass a real `ServerSslContext` / `ClientSslContext` before hosting anywhere public.
+> - `TcpClientSession` is `public` so game servers can reference it.
+> - Target frameworks are `net8.0` (Client, Common) and `net9.0` (Server) instead of `netstandard2.1`, and MessagePack is 3.1.8.
+>   Unity compatibility is not maintained in this fork.
+>
+> To clone the game with this fork: `git clone --recurse-submodules https://github.com/Hmestrovicg/G.B-U.V.I`.
+
 ScaleNet is a networking library for C# that is specifically designed around high player counts and MMO game networking requirements.
 
 It is transport-layer agnostic, meaning that you can implement your own transport layer if you want to.

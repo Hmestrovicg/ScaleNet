@@ -18,7 +18,7 @@ namespace ScaleNet.Client.LowLevel.Transport.Tcp
         public event Action<DeserializedNetMessage>? MessageReceived;
 
 
-        public TcpClientTransport(ClientSslContext context, string address, ushort port) : base(context, address, port)
+        public TcpClientTransport(ClientSslContext? context, string address, ushort port) : base(context, address, port)
         {
         }
 

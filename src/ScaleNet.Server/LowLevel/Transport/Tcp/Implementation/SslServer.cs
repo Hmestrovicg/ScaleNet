@@ -41,9 +41,9 @@ public class SslServer : IDisposable
     public ushort Port { get; }
 
     /// <summary>
-    /// SSL context
+    /// SSL context, or null for plain TCP without encryption (fork addition, local development only)
     /// </summary>
-    public ServerSslContext Context { get; }
+    public ServerSslContext? Context { get; }
 
     /// <summary>
     /// Endpoint
@@ -170,7 +170,7 @@ public class SslServer : IDisposable
     /// <param name="context">SSL context</param>
     /// <param name="address">IP address</param>
     /// <param name="port">Port number</param>
-    public SslServer(ServerSslContext context, IPAddress address, int port) : this(context, new IPEndPoint(address, port))
+    public SslServer(ServerSslContext? context, IPAddress address, int port) : this(context, new IPEndPoint(address, port))
     {
     }
 
@@ -180,7 +180,7 @@ public class SslServer : IDisposable
     /// </summary>
     /// <param name="context">SSL context</param>
     /// <param name="endpoint">IP endpoint</param>
-    public SslServer(ServerSslContext context, IPEndPoint endpoint) : this(context, endpoint, endpoint.Address.ToString(), (ushort)endpoint.Port)
+    public SslServer(ServerSslContext? context, IPEndPoint endpoint) : this(context, endpoint, endpoint.Address.ToString(), (ushort)endpoint.Port)
     {
     }
 
@@ -192,7 +192,7 @@ public class SslServer : IDisposable
     /// <param name="endpoint">Endpoint</param>
     /// <param name="address">Server address</param>
     /// <param name="port">Server port</param>
-    private SslServer(ServerSslContext context, EndPoint endpoint, string address, ushort port)
+    private SslServer(ServerSslContext? context, EndPoint endpoint, string address, ushort port)
     {
         Id = Guid.NewGuid();
         Address = address;
